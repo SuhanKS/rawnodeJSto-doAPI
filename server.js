@@ -15,9 +15,8 @@ const server = http.createServer((req, res) => {
   if (url === "/todos" && method === "GET") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(todos));
-
-    // 2. Handle POST /todos (CREATE)
-  } else if (url === "/todos" && method === "POST") {
+  } // 2. Handle POST /todos (CREATE)
+  else if (url === "/todos" && method === "POST") {
     let body = "";
 
     req.on("data", (chunk) => {
@@ -49,9 +48,31 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: "Invalid JSON format" }));
       }
     });
+  }
 
-    // 3. Handle 404 Not Found
-  } else {
+  //3. Handle DELETE /todos/:id(NEW CODE)
+  else if (url.startsWith("/todos/") && method === "DELETE") {
+    // 1. get the id from the url
+    const id = parseInt(url.split("/")[2]);
+
+    // 2. check if the task exists
+    const todoExists = todos.find((t) => t.id === id);
+
+    if (!todoExists) {
+      // if not found
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ message: "To-do not found" }));
+    } else {
+      // if found, remove it
+      todos = todos.filter((t) => t.id !== id);
+      // send success response
+      res.writeHead(204); // 204 means "No Content"
+      res.end();
+    }
+  }
+
+  // 4. Handle 404 Not Found
+  else {
     res.writeHead(404, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Route Not Found" }));
   }
